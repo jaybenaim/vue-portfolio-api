@@ -60,9 +60,9 @@ require("./config/passport")(passport);
 /**
  * ROUTES
  */
-app.use("/api/blogs", blogs);
 app.use("/api", indexRouter);
 app.use("/api/users", users);
+app.use("/api/blogs", blogs);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
