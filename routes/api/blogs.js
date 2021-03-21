@@ -1,4 +1,5 @@
 const express = require("express");
+const { uploadImage } = require("../../helpers/imageUpload");
 const router = express.Router();
 
 const Blog = require("../../models/Blog");
@@ -6,8 +7,8 @@ const Blog = require("../../models/Blog");
 /** 
  * GET All Blogs
  */
-router.get('/', (req, res) => {
-  Blog.find({}).then(blog => {
+router.get('/', async (req, res) => {
+  await Blog.find({}).then(blog => {
     res.status(200).send(blog)
 
   }).catch(err => {
@@ -18,8 +19,17 @@ router.get('/', (req, res) => {
 /** 
  * CREATE New Blog
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const blog = new Blog(req.body)
+
+  if (blog.image) {
+    /** 
+     * @todo upload to cloudinary
+     * @return url as string 
+     * @set blog.image to url 
+     */
+    blog.image = await uploadImage(blog.image)
+  }
 
   blog.save()
     .then(blogResponse => res.status(200).send(blogResponse))
@@ -29,7 +39,7 @@ router.post('/', (req, res) => {
 /** 
  * UPDATE Update Blog
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   const newBlog = req.body
   const id = req.params.id
   const options = {
@@ -40,7 +50,7 @@ router.patch('/:id', (req, res) => {
 
   newBlog.updated = Date.now()
 
-  Blog.findByIdAndUpdate(
+  await Blog.findByIdAndUpdate(
     id,
     { $set: newBlog },
     options)
@@ -53,10 +63,10 @@ router.patch('/:id', (req, res) => {
 /**
  * DELETE Remove Doc
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const id = req.params.id
 
-  Blog.findOneAndDelete(id)
+  await Blog.findOneAndDelete(id)
     .then(response =>
       res.status(200)
         .send({

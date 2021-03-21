@@ -6,11 +6,13 @@ const logger = require("morgan");
 const bodyParser = require("body-parser");
 const users = require("./routes/api/users");
 const blogs = require("./routes/api/blogs");
+const imageUpload = require("./routes/api/imageUpload");
 const cors = require("cors");
 const CONSTANTS = require("./constants");
 const { PORT: port } = CONSTANTS;
 const passport = require("passport");
 const indexRouter = require("./routes");
+const cloudinary = require("cloudinary").v2;
 
 require("dotenv").config();
 require("./config/db");
@@ -18,17 +20,20 @@ require("./config/db");
 const app = express();
 
 // Bodyparser middleware
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(
+//   bodyParser.urlencoded({
+//     extended: false,
+//   })
+// );
+// app.use(bodyParser.json());
+
 
 // Cors
 const whitelist = [
+  "http://localhost:8080",
   "https://jaybenaim.github.io",
-  "http://localhost:3000",
   "http://localhost:5000",
   "http://localhost:5000",
 ];
@@ -57,12 +62,20 @@ app.use(passport.initialize());
 // Passport config
 require("./config/passport")(passport);
 
+// IMAGE UPLOADER 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
+
 /**
  * ROUTES
  */
 app.use("/api", indexRouter);
 app.use("/api/users", users);
 app.use("/api/blogs", blogs);
+app.use('/api/image-upload', imageUpload)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
