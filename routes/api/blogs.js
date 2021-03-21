@@ -17,19 +17,24 @@ router.get('/', async (req, res) => {
 })
 
 /** 
+ * GET By Id 
+ */
+router.get('/:id', async (req, res) => {
+  const blogId = req.params.id
+
+  await Blog.findById(blogId).then(blog => {
+    res.status(200).send(blog)
+
+  }).catch(err => {
+    res.status(500).send(err)
+  })
+})
+
+/** 
  * CREATE New Blog
  */
-router.post('/', async (req, res) => {
+router.post('/new', async (req, res) => {
   const blog = new Blog(req.body)
-
-  if (blog.image) {
-    /** 
-     * @todo upload to cloudinary
-     * @return url as string 
-     * @set blog.image to url 
-     */
-    blog.image = await uploadImage(blog.image)
-  }
 
   blog.save()
     .then(blogResponse => res.status(200).send(blogResponse))
