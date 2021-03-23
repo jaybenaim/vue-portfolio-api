@@ -132,19 +132,45 @@ router.post("/login", async (req, res) => {
  * 
  * @acess Public
  */
-router.get('/verify', (req, res) => {
+router.get('/:id/verify', (req, res) => {
   const { token } = req.query
-  console.log(token)
-  jwt.verify(token, process.env.SECRET, (err, verifiedJwt) => {
+  const { id } = req.params
+
+  jwt.verify(token, process.env.SECRET, async (err, verifiedJwt) => {
     if (err) {
-      return res
-        .status(400)
-        .send({ hasErrors: true, error: err });
+      // Set the users `isAuthenticated` status to false
+      await User.findByIdAndUpdate(id, {
+        $set: {
+          isAuthenticated: false
+        }
+      }, {
+        new: true,
+        select: 'name email createdOn isAuthenticated'
+      }).then(userResponse =>
+        res
+          .status(400)
+          .send({ hasErrors: true, error: err, user: userResponse })
+      ).catch(error =>
+        res
+          .status(400)
+          .send({ hasErrors: true, error })
+      )
     } else {
-      User.findByIdAndUpdate(verifiedJwt.id, {
-        isAuthenticated: true
+      // If there is a verified token change the `isAuthenticated` status to true
+      await User.findByIdAndUpdate(verifiedJwt.id, {
+        $set: {
+          isAuthenticated: true
+        }
+      }, {
+        new: true,
+        select: 'name email createdOn isAuthenticated'
       }).then(userResponse => {
+
         res.status(200).send(userResponse)
+      }).catch(error => {
+        return res
+          .status(400)
+          .send({ hasErrors: true, error });
       })
     }
   })
