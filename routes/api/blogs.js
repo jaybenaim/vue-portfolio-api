@@ -1,5 +1,4 @@
 const express = require("express");
-const { uploadImage } = require("../../helpers/imageUpload");
 const router = express.Router();
 
 const Blog = require("../../models/Blog");

@@ -28,8 +28,6 @@ router.get("/", async (req, res) => {
  * @access Public 
  */
 router.post("/sign-up", (req, res) => {
-  console.log(req.body)
-
   // Form validation
   const { errors, isValid } = validateRegisterInput(req.body);
   // Check validation
@@ -55,7 +53,7 @@ router.post("/sign-up", (req, res) => {
           newUser.password = hash;
           newUser
             .save()
-            .then((user) => res.json(user))
+            .then((user) => res.send(user))
             .catch((err) => console.log(err));
         });
       });
@@ -117,7 +115,7 @@ router.post("/login", async (req, res) => {
       } else {
         return res
           .status(400)
-          .send({ hasErrors: true, password: "Password incorrect" });
+          .send({ success: false, password: "Password incorrect" });
       }
     });
   });
@@ -132,32 +130,20 @@ router.post("/login", async (req, res) => {
  * 
  * @acess Public
  */
-router.get('/:id/verify', (req, res) => {
+router.get('/verify', (req, res) => {
   const { token } = req.query
-  const { id } = req.params
 
-  jwt.verify(token, process.env.SECRET, async (err, verifiedJwt) => {
+  jwt.verify(token, process.env.SECRET, (err, verifiedJwt) => {
     if (err) {
-      // Set the users `isAuthenticated` status to false
-      await User.findByIdAndUpdate(id, {
-        $set: {
-          isAuthenticated: false
-        }
-      }, {
-        new: true,
-        select: 'name email createdOn isAuthenticated'
-      }).then(userResponse =>
-        res
-          .status(400)
-          .send({ hasErrors: true, error: err, user: userResponse })
-      ).catch(error =>
-        res
-          .status(400)
-          .send({ hasErrors: true, error })
-      )
+      res
+        .status(400)
+        .send({
+          success: false,
+          error: err
+        })
     } else {
       // If there is a verified token change the `isAuthenticated` status to true
-      await User.findByIdAndUpdate(verifiedJwt.id, {
+      User.findByIdAndUpdate(verifiedJwt.id, {
         $set: {
           isAuthenticated: true
         }
@@ -170,7 +156,10 @@ router.get('/:id/verify', (req, res) => {
       }).catch(error => {
         return res
           .status(400)
-          .send({ hasErrors: true, error });
+          .send({
+            success: false,
+            error
+          });
       })
     }
   })

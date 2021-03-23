@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const normalizeMongoose = require("normalize-mongoose");
 const Schema = mongoose.Schema;
 
 const BlogSchema = new Schema({
@@ -44,5 +45,7 @@ const BlogSchema = new Schema({
     type: Array
   }
 });
+
+BlogSchema.plugin(normalizeMongoose)
 
 module.exports = Blog = mongoose.model("blogs", BlogSchema);

@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const normalizeMongoose = require("normalize-mongoose");
+
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -29,5 +31,7 @@ const UserSchema = new Schema({
     default: false
   }
 });
+
+UserSchema.plugin(normalizeMongoose)
 
 module.exports = User = mongoose.model("users", UserSchema);
