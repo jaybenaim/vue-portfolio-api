@@ -8,24 +8,45 @@ const validateLoginInput = require("../../validation/login");
 // Load User model
 const User = require("../../models/User");
 
-// @route POST api/users/register
-// @desc Register user
-// @access Public
-router.post("/register", (req, res) => {
+/** 
+ * @todo REMOVE THIS IS FOR DEVELOPMENT ONLY 
+ */
+router.get("/", async (req, res) => {
+  await User.find({}, (err, response) => {
+    res.send(response)
+  })
+})
+/** 
+ * @END REMOVE 
+ */
+
+/**
+ * Register User 
+ *  
+ * @route POST api/users/register
+ * 
+ * @access Public 
+ */
+router.post("/sign-up", (req, res) => {
+  console.log(req.body)
+
   // Form validation
   const { errors, isValid } = validateRegisterInput(req.body);
   // Check validation
   if (!isValid) {
     return res.status(400).json(errors);
   }
+
+
   User.findOne({ email: req.body.email }).then((user) => {
     if (user) {
-      return res.status(400).json({ email: "Email already exists" });
+      return res.status(400).send({ email: "Email already exists" });
     } else {
       const newUser = new User({
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
+        isAuthenticated: true
       });
       // Hash password before saving in database
       bcrypt.genSalt(10, (err, salt) => {
@@ -42,10 +63,15 @@ router.post("/register", (req, res) => {
   });
 });
 
-// @route POST api/users/login
-// @desc Login user and return JWT token
-// @access Public
-router.post("/login", (req, res) => {
+/**
+ * Login via JWT 
+ *  
+ * @route POST api/users/login
+ * 
+ * @access Public
+ */
+
+router.post("/login", async (req, res) => {
   // Form validation
   const { errors, isValid } = validateLoginInput(req.body);
   // Check validation
@@ -55,10 +81,10 @@ router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   // Find user by email
-  User.findOne({ email }).then((user) => {
+  await User.findOne({ email }).then((user) => {
     // Check if user exists
     if (!user) {
-      return res.status(404).json({ emailnotfound: "Email not found" });
+      return res.status(404).send({ email: "Email not found" });
     }
     // Check password
     bcrypt.compare(password, user.password).then((isMatch) => {
@@ -68,6 +94,10 @@ router.post("/login", (req, res) => {
         const payload = {
           id: user.id,
           name: user.name,
+          username: user.username,
+          email: user.email,
+          image: user.image,
+          isAuthenticated: true
         };
         // Sign token
         jwt.sign(
@@ -77,8 +107,7 @@ router.post("/login", (req, res) => {
             expiresIn: 31556926, // 1 year in seconds
           },
           (err, token) => {
-            console.log(token);
-            res.json({
+            res.status(200).send({
               success: true,
               user: payload,
               token: "Bearer " + token,
@@ -88,10 +117,37 @@ router.post("/login", (req, res) => {
       } else {
         return res
           .status(400)
-          .json({ sucess: false, passwordincorrect: "Password incorrect" });
+          .send({ hasErrors: true, password: "Password incorrect" });
       }
     });
   });
 });
+
+/**
+ * Check if user has a valid token, then update the User `isAuthenticated` state. 
+ * 
+ * @route Get 
+ * 
+ * @query token - Bearer Token 
+ * 
+ * @acess Public
+ */
+router.get('/verify', (req, res) => {
+  const { token } = req.query
+  console.log(token)
+  jwt.verify(token, process.env.SECRET, (err, verifiedJwt) => {
+    if (err) {
+      return res
+        .status(400)
+        .send({ hasErrors: true, error: err });
+    } else {
+      User.findByIdAndUpdate(verifiedJwt.id, {
+        isAuthenticated: true
+      }).then(userResponse => {
+        res.status(200).send(userResponse)
+      })
+    }
+  })
+})
 
 module.exports = router;

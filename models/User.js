@@ -14,9 +14,19 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
-  date: {
+  username: {
+    type: String
+  },
+  image: {
+    type: String,
+  },
+  createdOn: {
     type: Date,
     default: Date.now
+  },
+  isAuthenticated: {
+    type: Boolean,
+    default: false
   }
 });
 
