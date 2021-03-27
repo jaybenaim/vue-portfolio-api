@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const User = require("../../models/User");
 const Blog = require("../../models/Blog");
 const validateNewBlog = require('../../validation/blogs')
 
@@ -8,11 +9,13 @@ const validateNewBlog = require('../../validation/blogs')
  * GET All Blogs
  */
 router.get('/', async (req, res) => {
-  await Blog.find({}).then(blog => {
-    res.status(200).send(blog)
 
-  }).catch(err => {
-    res.status(500).send(err)
+  await Blog.find({}).populate('uid', 'name username id image', User).exec((err, blog) => {
+    if (err) {
+      res.status(500).send(err)
+    }
+
+    res.status(200).send(blog)
   })
 })
 

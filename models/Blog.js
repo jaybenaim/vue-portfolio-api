@@ -45,8 +45,8 @@ const BlogSchema = new Schema({
     type: Array
   },
   uid: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: Schema.Types.ObjectId,
+    ref: 'users'
   }
 });
 
