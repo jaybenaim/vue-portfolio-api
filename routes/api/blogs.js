@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Blog = require("../../models/Blog");
+const validateNewBlog = require('../../validation/blogs')
 
 /** 
  * GET All Blogs
@@ -33,11 +34,21 @@ router.get('/:id', async (req, res) => {
  * CREATE New Blog
  */
 router.post('/new', async (req, res) => {
+  // Form validation
+  const { errors, isValid } = validateNewBlog(req.body);
+  // Check validation
+  if (!isValid) {
+    return res.status(400).send(errors);
+  }
+
   const blog = new Blog(req.body)
 
-  blog.save()
+  return await blog.save()
     .then(blogResponse => res.status(200).send(blogResponse))
-    .catch(err => res.status(500).send(err))
+    .catch(err => {
+      console.log(err)
+      return res.status(500).send(err)
+    })
 })
 
 /** 
