@@ -10,12 +10,18 @@ const validateNewBlog = require('../../validation/blogs')
  */
 router.get('/', async (req, res) => {
 
-  await Blog.find({}).populate('uid', 'name username id image', User).exec((err, blog) => {
+  await Blog.find({}).populate('uid', 'name username id image', User).exec((err, blogs) => {
     if (err) {
-      res.status(500).send(err)
+      res.status(500).send({
+        success: false,
+        error: err
+      })
     }
 
-    res.status(200).send(blog)
+    res.status(200).send({
+      success: true,
+      blogs: blogs
+    })
   })
 })
 
@@ -26,10 +32,16 @@ router.get('/:id', async (req, res) => {
   const blogId = req.params.id
 
   await Blog.findById(blogId).then(blog => {
-    res.status(200).send(blog)
+    res.status(200).send({
+      success: true,
+      blog
+    })
 
   }).catch(err => {
-    res.status(500).send(err)
+    res.status(500).send({
+      success: false,
+      error: err
+    })
   })
 })
 
@@ -47,10 +59,16 @@ router.post('/new', async (req, res) => {
   const blog = new Blog(req.body)
 
   return await blog.save()
-    .then(blogResponse => res.status(200).send(blogResponse))
+    .then(blogResponse => res.status(200).send({
+      success: true,
+      blog: blogResponse
+    }))
     .catch(err => {
       console.log(err)
-      return res.status(500).send(err)
+      return res.status(500).send({
+        success: false,
+        error: err
+      })
     })
 })
 
@@ -73,9 +91,15 @@ router.patch('/:id', async (req, res) => {
     { $set: newBlog },
     options)
     .then(blogResponse => {
-      res.status(200).send(blogResponse)
+      res.status(200).send({
+        success: true,
+        blog: blogResponse
+      })
     })
-    .catch(err => res.status(500).send(err))
+    .catch(err => res.status(500).send({
+      success: false,
+      error: err
+    }))
 })
 
 /**
@@ -88,12 +112,13 @@ router.delete('/:id', async (req, res) => {
     .then(response =>
       res.status(200)
         .send({
-          status: 'success'
+          success: true
         }))
     .catch(err =>
       res.status(500)
         .send({
-          status: 'failed'
+          success: false,
+          error: err
         }))
 })
 
