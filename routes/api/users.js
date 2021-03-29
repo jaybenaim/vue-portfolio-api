@@ -8,6 +8,13 @@ const validateLoginInput = require("../../validation/login");
 // Load User model
 const User = require("../../models/User");
 
+router.get('/', (r, s) => {
+  User.find({}).then(res => s.send(res))
+})
+
+router.get('/delete', (r, s) => {
+  User.deleteMany({}).then(res => s.send(res))
+})
 // @route POST api/users/register
 // @desc Register user
 // @access Public
@@ -50,7 +57,8 @@ router.post("/sign-up", (req, res) => {
 // @route POST api/users/login
 // @desc Login user and return JWT token
 // @access Public
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
+  console.log(req.body)
   // Form validation
   const { errors, isValid } = validateLoginInput(req.body);
   // Check validation
@@ -61,42 +69,56 @@ router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   // Find user by email
-  User.findOne({ email }).then((user) => {
-    // Check if user exists
-    if (!user) {
-      return res.status(400).send({ email: "Email not found" });
-    }
-    // Check password
-    bcrypt.compare(password, user.password).then((isMatch) => {
-      if (isMatch) {
-        // User matched
-        // Create JWT Payload
-        const payload = {
-          id: user.id,
-          name: user.name,
-        };
-        // Sign token
-        jwt.sign(
-          payload,
-          process.env.SECRET,
-          {
-            expiresIn: 31556926, // 1 year in seconds
-          },
-          (err, token) => {
-            res.json({
-              success: true,
-              user: payload,
-              token: "Bearer " + token,
-            });
-          }
-        );
-      } else {
-        return res
-          .status(400)
-          .json({ sucess: false, passwordincorrect: "Password incorrect" });
+  return await User.findOne({ email })
+    .then((user) => {
+      // Check if user exists
+      if (!user) {
+        return res.status(400).send({ email: "Email not found" });
       }
-    });
-  });
+      // Check password
+      bcrypt.compare(password, user.password).then((isMatch) => {
+        if (isMatch) {
+          // User matched
+          // Create JWT Payload
+          const payload = {
+            id: user.id,
+            name: user.name,
+          };
+          // Sign token
+          jwt.sign(
+            payload,
+            process.env.SECRET,
+            {
+              expiresIn: 31556926, // 1 year in seconds
+            },
+            (err, token) => {
+              if (err) {
+                res.send({
+                  success: false,
+                  error: err
+                })
+              } else {
+                res.send({
+                  success: true,
+                  user: payload,
+                  token: "Bearer " + token,
+                });
+              }
+            }
+          );
+        } else {
+          return res
+            .status(400)
+            .send({ sucess: false, password: "Password incorrect" });
+        }
+      });
+    }).catch(error => {
+      console.log(error)
+      res.status(500).send({
+        success: false,
+        error
+      })
+    })
 });
 
 /**
@@ -127,7 +149,7 @@ router.get('/verify', (req, res) => {
         }
       }, {
         new: true,
-        select: 'name email createdOn isAuthenticated'
+        select: 'name email image username createdOn isAuthenticated'
       }).then(userResponse => {
 
         res.status(200).send(userResponse)
@@ -141,6 +163,37 @@ router.get('/verify', (req, res) => {
       })
     }
   })
+})
+
+router.patch('/:id', async (req, res) => {
+  const id = req.params.id
+  const newUserProfile = req.body
+
+  await User.findByIdAndUpdate(id,
+    {
+      $set: {
+        username: newUserProfile.username,
+        email: newUserProfile.email,
+        image: newUserProfile.image
+      }
+    },
+    {
+      new: true,
+      fields: 'name email image username createdOn isAuthenticated'
+    }
+  ).then((userResponse) => {
+    console.log(userResponse)
+    res.status(200).send({
+      success: true,
+      user: userResponse
+    })
+  }).catch(error => {
+    res.status(400).send({
+      success: false,
+      error
+    })
+  })
+
 })
 
 module.exports = router;
