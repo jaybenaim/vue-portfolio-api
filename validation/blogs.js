@@ -5,7 +5,9 @@ module.exports = function validateNewBlog(data) {
 
   // Convert empty fields to an empty string so we can use validator functions
   data.title = !isEmpty(data.title) ? data.title : "";
-  data.password = !isEmpty(data.password) ? data.password : "";
+  data.author = !isEmpty(data.author) ? data.author : "";
+  data.content = !isEmpty(data.content) ? data.content : "";
+  data.summary = !isEmpty(data.summary) ? data.summary : "";
 
   if (Validator.isEmpty(data.title)) {
     errors.title = "Title field is required";

@@ -26,6 +26,32 @@ router.get('/', async (req, res) => {
 })
 
 /** 
+ * GET By User Id 
+ */
+router.get('/find', async (req, res) => {
+  const userId = req.query.user
+
+  await Blog.find({
+    'uid': userId
+  })
+    .populate('uid', 'name username id image', User)
+    .exec()
+    .then(blogResponse => {
+      res.status(200).send({
+        success: true,
+        blogs: blogResponse
+      })
+
+    }).catch(err => {
+      console.log(err)
+      res.status(500).send({
+        success: false,
+        error: err
+      })
+    })
+})
+
+/** 
  * GET By Id 
  */
 router.get('/:id', async (req, res) => {
@@ -44,6 +70,7 @@ router.get('/:id', async (req, res) => {
     })
   })
 })
+
 
 /** 
  * CREATE New Blog
