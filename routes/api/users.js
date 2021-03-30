@@ -150,8 +150,10 @@ router.get('/verify', (req, res) => {
         new: true,
         select: 'name email image username createdOn isAuthenticated'
       }).then(userResponse => {
-
-        res.status(200).send(userResponse)
+        res.status(200).send({
+          success: true,
+          user: userResponse
+        })
       }).catch(error => {
         res
           .status(400)

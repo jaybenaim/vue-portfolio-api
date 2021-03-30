@@ -5,13 +5,13 @@ const router = express.Router();
 router.get("/", (req, res) => {
   try {
     return res.status(200).send({
-      status: 'success'
+      success: true
     });
   }
 
   catch (error) {
     return res.status(500).send({
-      status: 'failed'
+      success: false
     });
   }
 });
