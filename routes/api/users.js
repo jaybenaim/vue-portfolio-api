@@ -58,7 +58,6 @@ router.post("/sign-up", (req, res) => {
 // @desc Login user and return JWT token
 // @access Public
 router.post("/login", async (req, res) => {
-  console.log(req.body)
   // Form validation
   const { errors, isValid } = validateLoginInput(req.body);
   // Check validation
@@ -182,7 +181,6 @@ router.patch('/:id', async (req, res) => {
       fields: 'name email image username createdOn isAuthenticated'
     }
   ).then((userResponse) => {
-    console.log(userResponse)
     res.status(200).send({
       success: true,
       user: userResponse
