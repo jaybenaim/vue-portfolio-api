@@ -153,7 +153,7 @@ router.get('/verify', (req, res) => {
 
         res.status(200).send(userResponse)
       }).catch(error => {
-        return res
+        res
           .status(400)
           .send({
             success: false,

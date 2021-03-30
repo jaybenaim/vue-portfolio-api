@@ -10,19 +10,20 @@ const validateNewBlog = require('../../validation/blogs')
  */
 router.get('/', async (req, res) => {
 
-  await Blog.find({}).populate('uid', 'name username id image', User).exec((err, blogs) => {
-    if (err) {
+  await Blog.find().populate('uid', 'name username id image', User).exec()
+    .then(response => {
+      res.status(200).send({
+        success: true,
+        blogs: response
+      })
+    }).catch(error => {
+      console.log(error)
       res.status(500).send({
         success: false,
-        error: err
+        error
       })
-    }
-
-    res.status(200).send({
-      success: true,
-      blogs: blogs
     })
-  })
+
 })
 
 /** 
