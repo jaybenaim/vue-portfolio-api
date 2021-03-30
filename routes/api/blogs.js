@@ -83,7 +83,10 @@ router.post('/new', async (req, res) => {
     return res.status(400).send(errors);
   }
 
-  const blog = new Blog(req.body)
+  const newBlog = req.body
+  newBlog.uid = newBlog.uid.id
+
+  const blog = new Blog(newBlog)
 
   return await blog.save()
     .then(blogResponse => res.status(200).send({
@@ -112,6 +115,7 @@ router.patch('/:id', async (req, res) => {
   }
 
   newBlog.updated = Date.now()
+  newBlog.uid = newBlog.uid.id
 
   await Blog.findByIdAndUpdate(
     id,
