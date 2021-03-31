@@ -23,7 +23,6 @@ router.get('/', async (req, res) => {
         error
       })
     })
-
 })
 
 /** 
@@ -58,18 +57,21 @@ router.get('/find', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const blogId = req.params.id
 
-  await Blog.findById(blogId).then(blog => {
-    res.status(200).send({
-      success: true,
-      blog
-    })
+  await Blog.findById(blogId)
+    .populate('uid', 'name username id image', User)
+    .exec()
+    .then(blog => {
+      res.status(200).send({
+        success: true,
+        blog
+      })
 
-  }).catch(err => {
-    res.status(500).send({
-      success: false,
-      error: err
+    }).catch(err => {
+      res.status(500).send({
+        success: false,
+        error: err
+      })
     })
-  })
 })
 
 
@@ -90,6 +92,8 @@ router.post('/new', async (req, res) => {
   const blog = new Blog(newBlog)
 
   return await blog.save()
+    .populate('uid', 'name username id image', User)
+    .exec()
     .then(blogResponse => res.status(200).send({
       success: true,
       blog: blogResponse
@@ -122,6 +126,8 @@ router.patch('/:id', async (req, res) => {
     id,
     { $set: newBlog },
     options)
+    .populate('uid', 'name username id image', User)
+    .exec()
     .then(blogResponse => {
       res.status(200).send({
         success: true,
@@ -139,6 +145,7 @@ router.patch('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
   const id = req.params.id
+
 
   await Blog.findOneAndDelete(id)
     .then(response =>
