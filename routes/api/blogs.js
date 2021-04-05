@@ -87,13 +87,14 @@ router.post('/new', async (req, res) => {
   }
 
   const newBlog = req.body
-  newBlog.uid = newBlog.uid.id
+
+  newBlog.uid = req.body.uid.id
 
   const blog = new Blog(newBlog)
 
-  return await blog.save()
+  return await blog
     .populate('uid', 'name username id image', User)
-    .exec()
+    .save()
     .then(blogResponse => res.status(200).send({
       success: true,
       blog: blogResponse
@@ -146,8 +147,7 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const id = req.params.id
 
-
-  await Blog.findOneAndDelete(id)
+  await Blog.findByIdAndDelete(id)
     .then(response =>
       res.status(200)
         .send({

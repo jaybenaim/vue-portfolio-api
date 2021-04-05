@@ -99,7 +99,7 @@ router.post("/login", async (req, res) => {
               } else {
                 res.send({
                   success: true,
-                  user: payload,
+                  user,
                   token: "Bearer " + token,
                 });
               }
