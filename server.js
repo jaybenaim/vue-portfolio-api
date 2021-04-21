@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const users = require("./routes/api/users");
 const blogs = require("./routes/api/blogs");
 const imageUpload = require("./routes/api/imageUpload");
+const email = require("./routes/api/email");
 const cors = require("cors");
 const CONSTANTS = require("./constants");
 const { PORT: port } = CONSTANTS;
@@ -76,6 +77,7 @@ app.use("/api", indexRouter);
 app.use("/api/users", users);
 app.use("/api/blogs", blogs);
 app.use('/api/image-upload', imageUpload)
+app.use('/api/email', email)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
