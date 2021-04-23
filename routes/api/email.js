@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
 
     const msg = {
       to: "benaimjacob@gmail.com",
-      from: email,
+      from: "benaimjacob@gmail.com",
       subject,
       text: message,
       html,
